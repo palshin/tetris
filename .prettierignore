@@ -1,4 +1,4 @@
-# Add files here to ignore them from prettier formatting
+# Add files here to ignore them from prettier formatting. See https://prettier.io/docs/en/ignore.html for more info
 /dist
 /coverage
 /tmp
