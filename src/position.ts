@@ -34,4 +34,10 @@ export class Position implements Movable {
   isValid(): boolean {
     return this.x > -4 && this.y > -4;
   }
+
+  round<T extends Position>(): T {
+    const Static = this.constructor as PositionConstructor<T>;
+
+    return new Static(Math.floor(this.x), Math.floor(this.y));
+  }
 }

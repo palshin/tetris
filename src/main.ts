@@ -12,6 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const canvasRenderer = new CanvasRenderer(context, { length: 400 });
     const tetris = new Tetris(canvasRenderer);
     console.clear();
-    tetris.evolute();
+    tetris.start();
   }
 });

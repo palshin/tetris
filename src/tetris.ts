@@ -3,7 +3,6 @@ import { Figure } from '@/figure';
 import { TetrisConfig } from '@/types/tetris-config.interface';
 import { TetrisState } from '@/types/tetris-state.interface';
 import { CanvasRenderer } from '@/renderers/canvas.renderer';
-import { FigureType } from '@/types/figure-type.enum';
 import { FigureFactory } from '@/figures/figure.factory';
 import { Position } from '@/position';
 import { MoveDirection } from '@/types/move-direction.type';
@@ -30,14 +29,14 @@ const DEFAULT_TETRIS_CONFIG: TetrisConfig = {
  * Game logic
  */
 export class Tetris {
-  readonly config: TetrisConfig;
+  private readonly config: TetrisConfig;
 
-  readonly state: TetrisState;
+  private readonly state: TetrisState;
 
   /**
    * matrix of game "pixels" (or blocks)
    */
-  readonly matrix: Block[][];
+  private readonly matrix: Block[][];
 
   private callbacks: Callback[] = [];
 
@@ -45,12 +44,14 @@ export class Tetris {
    * @param renderer - renderer that delegate drawing operations
    * @param config - game initial config object
    */
-  constructor(protected readonly renderer: CanvasRenderer, config: Readonly<Partial<TetrisConfig>> = {}) {
+  constructor(private readonly renderer: CanvasRenderer, config: Readonly<Partial<TetrisConfig>> = {}) {
     this.config = { ...DEFAULT_TETRIS_CONFIG, ...config };
 
     this.state = {
       time: 0,
       score: 0,
+      baseSpeed: 1000,
+      speed: 1000, // ms for 1 round step
       figure: {
         current: this.generateFigure(this.startPosition),
         next: this.generateFigure(this.startPosition),
@@ -109,11 +110,11 @@ export class Tetris {
     });
   }
 
-  get startPosition(): Position {
+  private get startPosition(): Position {
     return new Position(Math.floor(this.config.blocksCount / 2), -2);
   }
 
-  get bounds(): Bounds {
+  private get bounds(): Bounds {
     return {
       x: {
         from: 0,
@@ -126,65 +127,88 @@ export class Tetris {
     };
   }
 
-  evolute(): void {
-    // перед началом каждого тика выполняем колбеки
+  public start(): void {
+    this.state.time = Date.now();
+    this.draw();
+    this.main();
+  }
+
+  private main(): void {
+    const now = Date.now();
+    this.state.speed = this.state.pressedKeys.down ? this.state.baseSpeed * 10 : this.state.baseSpeed;
+    this.evolute(now - this.state.time);
+    this.draw();
+    this.state.time = now;
+    requestAnimationFrame(this.main.bind(this));
+  }
+
+  private evolute(timeDelta: number): void {
+    // перед началом каждого цилка выполняем колбеки
     this.executeCallbacks();
 
-    this.renderer.clear();
-    this.renderer.drawStage();
-
-    // сначала отрисовываем пустые блоки
-    this.drawBlockMatrix(this.matrix);
-
-    // теперь отрисовываем падающую фигуру
     if (this.state.figure.current) {
-      // высчитываем следующую позицию для падающей фигуры
-      this.evoluteCurrentFigure();
-      // отрисовываем фигуру
-      this.drawBlocks(this.state.figure.current.blocks);
+      // высчитываем позицию для падающей фигуры
+      this.evoluteCurrentFigure(timeDelta);
     } else {
       this.nextTick(() => {
         this.state.figure.current = this.state.figure.next;
         this.state.figure.next = this.generateFigure(this.startPosition);
       });
     }
-    // теперь отрисовываем упавшие блоки
-    this.state.fallenBlocks.forEach((block) => this.renderer.drawBlock(block));
-
-    setTimeout(() => {
-      this.evolute();
-    }, 500);
   }
 
-  evoluteCurrentFigure(): void {
+  private draw(): void {
+    // очищаем всю область
+    this.renderer.clear();
+
+    // рисуем сцену
+    this.renderer.drawStage();
+
+    // отрисовываем пустые блоки
+    this.drawBlockMatrix();
+
+    // отрисовываем падающую фигуру
+    if (this.state.figure.current) {
+      this.drawBlocks(this.state.figure.current.blocks);
+    }
+
+    // отрисовываем упавшие блоки
+    this.state.fallenBlocks.forEach((block) => this.renderer.drawBlock(block));
+  }
+
+  private evoluteCurrentFigure(timeDelta: number): void {
     let currentFigure = this.state.figure.current;
     if (!currentFigure) {
       return;
     }
-    // всегда опускаем на 1 вниз
-    const canMoveDown = this.canMove(currentFigure, 'down', 1);
+    const steps = this.getSteps(timeDelta);
+    const canMoveDown = this.canMove(currentFigure, 'down', steps);
     if (!canMoveDown) {
       this.nextTick(() => {
         this.addFigureToFallenBlocks(currentFigure!);
         this.state.figure.current = this.generateFigure(this.startPosition);
       });
     } else {
-      currentFigure = currentFigure.move('down', 1);
+      currentFigure = currentFigure.move('down', steps);
     }
-    if (this.state.pressedKeys.left && this.canMove(currentFigure, 'left', 1)) {
-      currentFigure = currentFigure.move('left', 1);
+    if (this.state.pressedKeys.left && this.canMove(currentFigure, 'left', steps)) {
+      currentFigure = currentFigure.move('left', steps);
     }
-    if (this.state.pressedKeys.right && this.canMove(currentFigure, 'right', 1)) {
-      currentFigure = currentFigure.move('right', 1);
+    if (this.state.pressedKeys.right && this.canMove(currentFigure, 'right', steps)) {
+      currentFigure = currentFigure.move('right', steps);
     }
     this.state.figure.current = currentFigure;
   }
 
-  addFigureToFallenBlocks(figure: Figure): void {
-    this.state.fallenBlocks.push(...figure.blocks);
+  private getSteps(timeDelta: number): number {
+    return (this.state.speed * timeDelta) / 1000 / 1000;
   }
 
-  canMove(figure: Figure, direction: MoveDirection, steps: number): boolean {
+  private addFigureToFallenBlocks(figure: Figure): void {
+    this.state.fallenBlocks.push(...figure.round().blocks);
+  }
+
+  private canMove(figure: Figure, direction: MoveDirection, steps: number): boolean {
     const nextFigure = figure.move(direction, steps);
 
     return (
@@ -194,37 +218,43 @@ export class Tetris {
     );
   }
 
-  hasIntersectionWithFallenBlocks(block: Block): boolean {
-    return this.state.fallenBlocks.some((b) => b.position.x === block.position.x && b.position.y === block.position.y);
-  }
+  private hasIntersectionWithFallenBlocks(block: Block): boolean {
+    const roundBlock = block.round();
 
-  goesOutOfBounds(block: Block): boolean {
-    return (
-      this.bounds.x.from > block.position.x ||
-      this.bounds.x.to < block.position.x ||
-      this.bounds.y.from > block.position.y ||
-      this.bounds.y.to < block.position.y
+    return this.state.fallenBlocks.some(
+      (b) => b.position.x === roundBlock.position.x && b.position.y === roundBlock.position.y,
     );
   }
 
-  nextTick(callback: Callback): void {
+  private goesOutOfBounds(block: Block): boolean {
+    const roundBlock = block.round();
+
+    return (
+      this.bounds.x.from > roundBlock.position.x ||
+      this.bounds.x.to < roundBlock.position.x ||
+      this.bounds.y.from > roundBlock.position.y ||
+      this.bounds.y.to < roundBlock.position.y
+    );
+  }
+
+  private nextTick(callback: Callback): void {
     this.callbacks.push(callback);
   }
 
-  executeCallbacks(): void {
+  private executeCallbacks(): void {
     this.callbacks.forEach((callback) => callback());
     this.callbacks.length = 0;
   }
 
-  drawBlocks(blocks: readonly Block[]): void {
+  private drawBlocks(blocks: readonly Block[]): void {
     blocks.forEach((block) => this.renderer.drawBlock(block));
   }
 
-  drawBlockMatrix(blockMatrix: readonly Block[][]): void {
-    blockMatrix.forEach((blocks) => this.drawBlocks(blocks));
+  private drawBlockMatrix(): void {
+    this.matrix.forEach((blocks) => this.drawBlocks(blocks));
   }
 
-  readonly generateFigure = (position: Position): Figure => {
+  private readonly generateFigure = (position: Position): Figure => {
     return FigureFactory.makeRandom(position);
   };
 }

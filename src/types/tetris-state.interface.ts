@@ -4,7 +4,9 @@ import { Block } from '@/block';
 
 export interface TetrisState {
   time: number;
-  score: 0;
+  score: number;
+  baseSpeed: number;
+  speed: number;
   pressedKeys: {
     [k in MoveDirection]: boolean;
   };

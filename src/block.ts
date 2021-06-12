@@ -14,4 +14,10 @@ export class Block implements Movable {
 
     return new Static(this.position.move(direction, steps), this.color);
   }
+
+  round<T extends Block>(): T {
+    const Static = this.constructor as BlockConstructor<T>;
+
+    return new Static(this.position.round(), this.color);
+  }
 }

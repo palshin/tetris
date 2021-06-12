@@ -19,4 +19,10 @@ export abstract class Figure implements Movable {
 
     return new Static(this.position.move(direction, steps), this.color);
   }
+
+  round<T extends Figure>(): T {
+    const Static = this.constructor as FigureConstructor<T>;
+
+    return new Static(this.position.round(), this.color);
+  }
 }

@@ -61,7 +61,7 @@ export class CanvasRenderer {
   drawBlock(block: Readonly<Block>): void {
     const { context } = this;
     const { blockLength: l, blockBorderWidth: bw } = this;
-    const { x, y } = this.translatePosition(block.position);
+    const { x, y } = this.translatePosition(block.position.round());
 
     context.save();
 
