@@ -24,6 +24,15 @@
   },
   "rules": {
     "no-debugger": "off",
-    "no-console": 0
+    "no-console": 0,
+    "func-names": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "import/prefer-default-export": "off",
+    "unicorn/no-array-for-each": "off",
+    "no-restricted-syntax": [
+      "error",
+      "WithStatement"
+    ],
+    "no-bitwise": "off"
   }
 }
