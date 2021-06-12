@@ -1,8 +1,9 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 import { Figure } from '@/figure';
 import { Position } from '@/position';
 import { Block } from '@/block';
 
-export class SquareFigure extends Figure {
+export class RightGunFigure extends Figure {
   public readonly blocks: Block[];
 
   constructor(public readonly position: Position, public readonly color: string) {
@@ -10,9 +11,9 @@ export class SquareFigure extends Figure {
 
     this.blocks = [
       new Block(position, color),
-      new Block(new Position(position.x + 1, position.y), color),
       new Block(new Position(position.x, position.y + 1), color),
-      new Block(new Position(position.x + 1, position.y + 1), color),
+      new Block(new Position(position.x, position.y + 2), color),
+      new Block(new Position(position.x + 1, position.y + 2), color),
     ];
   }
 }

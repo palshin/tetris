@@ -127,7 +127,6 @@ export class Tetris {
   }
 
   evolute(): void {
-    console.log(this.state);
     // перед началом каждого тика выполняем колбеки
     this.executeCallbacks();
 
@@ -136,9 +135,6 @@ export class Tetris {
 
     // сначала отрисовываем пустые блоки
     this.drawBlockMatrix(this.matrix);
-
-    // теперь отрисовываем упавшие блоки
-    this.state.fallenBlocks.forEach((block) => this.renderer.drawBlock(block));
 
     // теперь отрисовываем падающую фигуру
     if (this.state.figure.current) {
@@ -152,6 +148,8 @@ export class Tetris {
         this.state.figure.next = this.generateFigure(this.startPosition);
       });
     }
+    // теперь отрисовываем упавшие блоки
+    this.state.fallenBlocks.forEach((block) => this.renderer.drawBlock(block));
 
     setTimeout(() => {
       this.evolute();
@@ -227,6 +225,6 @@ export class Tetris {
   }
 
   readonly generateFigure = (position: Position): Figure => {
-    return FigureFactory.makeFigure(FigureType.Square, position, '#00FF00');
+    return FigureFactory.makeRandom(position);
   };
 }
