@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (context) {
     const canvasRenderer = new CanvasRenderer(context, { length: 400 });
-    const tetris = new Tetris(canvasRenderer, { length: 400 });
-    tetris.start();
+    const tetris = new Tetris(canvasRenderer);
+    console.clear();
+    tetris.evolute();
   }
 });

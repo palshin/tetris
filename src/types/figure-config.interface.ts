@@ -1,4 +1,4 @@
-import { Position } from '@/types/position.interface';
+import { Position } from '@/position';
 
 export interface FigureConfig {
   position: Position;

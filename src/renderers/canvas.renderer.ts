@@ -1,5 +1,5 @@
 import { Block } from '@/block';
-import { Position } from '@/types/position.interface';
+import { Position } from '@/position';
 import { Color } from '@/support/color.support';
 
 interface RendererConfig {
@@ -33,10 +33,7 @@ export class CanvasRenderer {
   }
 
   private translatePosition(position: Readonly<Position>): Position {
-    return {
-      x: position.x * this.blockLength,
-      y: position.y * this.blockLength,
-    };
+    return new Position(position.x * this.blockLength, position.y * this.blockLength);
   }
 
   clear(): void {

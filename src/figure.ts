@@ -1,23 +1,22 @@
 import { Block } from '@/block';
 import { Movable } from '@/types/movable.interface';
 import { MoveDirection } from '@/types/move-direction.type';
-import { Position } from '@/types/position.interface';
+import { Position } from '@/position';
 
 type FigureConstructor<T> = new (position: Position, color: string) => T;
 
 export abstract class Figure implements Movable {
-  protected blocks: Block[] = [];
+  public abstract readonly blocks: Block[];
 
-  protected constructor(protected readonly position: Position, protected readonly color: string) { }
+  protected constructor(public readonly position: Position, public readonly color: string) { }
 
-  move<T extends Figure>(direction: MoveDirection, step: number): T {
-    const figure = new (this.constructor as FigureConstructor<T>)(this.position, this.color);
-    figure.blocks.forEach((block) => block.move(direction, step));
-
-    return figure;
+  isValidPosition(): boolean {
+    return this.blocks.every((block) => block.position.isValid());
   }
 
-  getBlocks(): Block[] {
-    return this.blocks;
+  move<T extends Figure>(direction: MoveDirection, steps: number): T {
+    const Static = this.constructor as FigureConstructor<T>;
+
+    return new Static(this.position.move(direction, steps), this.color);
   }
 }

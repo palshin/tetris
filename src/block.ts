@@ -1,25 +1,17 @@
 import { MoveDirection } from '@/types/move-direction.type';
-import { Position } from '@/types/position.interface';
+import { Position } from '@/position';
 import { Movable } from '@/types/movable.interface';
 
-export class Block implements Movable {
-  constructor(readonly position: Position, readonly color: string) { }
+type BlockConstructor<T> = new (position: Position, color: string) => T;
 
-  move(direction: MoveDirection, step = 1): void {
-    switch (direction) {
-      case 'down':
-        this.position.y += step;
-        break;
-      case 'up':
-        this.position.y -= step;
-        break;
-      case 'left':
-        this.position.x -= step;
-        break;
-      case 'right':
-        this.position.x += step;
-        break;
-      default:
-    }
+export class Block implements Movable {
+  constructor(public readonly position: Position, public readonly color: string) {
+    Object.freeze(this);
+  }
+
+  move<T extends Block>(direction: MoveDirection, steps: number): T {
+    const Static = this.constructor as BlockConstructor<T>;
+
+    return new Static(this.position.move(direction, steps), this.color);
   }
 }
