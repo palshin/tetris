@@ -33,6 +33,7 @@
       "error",
       "WithStatement"
     ],
-    "no-bitwise": "off"
+    "no-bitwise": "off",
+    "class-methods-use-this": "off"
   }
 }

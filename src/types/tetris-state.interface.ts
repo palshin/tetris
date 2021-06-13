@@ -8,7 +8,7 @@ export interface TetrisState {
   baseSpeed: number;
   speed: number;
   pressedKeys: {
-    [k in MoveDirection]: boolean;
+    [k in MoveDirection | 'rotateClockwise' | 'rotateCounterClockwise']: boolean;
   };
   fallenBlocks: Block[];
   figure: {

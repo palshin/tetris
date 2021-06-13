@@ -87,6 +87,12 @@ export class Tetris {
         case 'ArrowUp':
           this.state.pressedKeys.up = true;
           break;
+        case 'E':
+          this.state.pressedKeys.rotateClockwise = true;
+          break;
+        case 'Q':
+          this.state.pressedKeys.rotateCounterClockwise = true;
+          break;
         default:
       }
     });
@@ -104,6 +110,12 @@ export class Tetris {
           break;
         case 'ArrowUp':
           this.state.pressedKeys.up = false;
+          break;
+        case 'E':
+          this.state.pressedKeys.rotateClockwise = false;
+          break;
+        case 'Q':
+          this.state.pressedKeys.rotateCounterClockwise = false;
           break;
         default:
       }
