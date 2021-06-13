@@ -56,7 +56,6 @@ export class Tetris {
         current: this.generateFigure(this.startPosition),
         next: this.generateFigure(this.startPosition),
       },
-      fallenBlocks: [],
       pressedKeys: {
         up: false,
         down: false,
@@ -197,9 +196,6 @@ export class Tetris {
     if (this.state.figure.current) {
       this.drawBlocks(this.state.figure.current.blocks);
     }
-
-    // отрисовываем упавшие блоки
-    this.state.fallenBlocks.forEach((block) => this.renderer.drawBlock(block));
   }
 
   private evoluteCurrentFigure(timeDelta: number): void {
@@ -231,7 +227,7 @@ export class Tetris {
     const canMoveDown = this.canMove(currentFigure, 'down', steps);
     if (!canMoveDown) {
       this.nextTick(() => {
-        this.addFigureToFallenBlocks(currentFigure!);
+        this.addFallenFigureToMatrix(currentFigure!);
         this.state.figure.current = this.generateFigure(this.startPosition);
       });
     } else {
@@ -244,8 +240,10 @@ export class Tetris {
     return (this.state.speed * timeDelta) / 1000 / 1000;
   }
 
-  private addFigureToFallenBlocks(figure: Figure): void {
-    this.state.fallenBlocks.push(...figure.round().blocks);
+  private addFallenFigureToMatrix(figure: Figure): void {
+    figure.round().blocks.forEach((block) => {
+      this.matrix[block.position.x][block.position.y] = block;
+    });
   }
 
   private canMove(figure: Figure, direction: MoveDirection, steps: number): boolean {
@@ -270,21 +268,20 @@ export class Tetris {
 
   private hasIntersectionWithFallenBlocks(block: Block): boolean {
     const roundBlock = block.round();
+    const matrixBlockColor =
+      this.matrix?.[roundBlock.position.x]?.[roundBlock.position.y]?.color ?? this.config.backgroundColor;
 
-    return this.state.fallenBlocks.some(
-      (b) => b.position.x === roundBlock.position.x && b.position.y === roundBlock.position.y,
-    );
+    return matrixBlockColor !== this.config.backgroundColor;
   }
 
   private goesOutOfBounds(block: Block): boolean {
     const roundBlock = block.round();
 
-    return (
-      this.bounds.x.from > roundBlock.position.x ||
-      this.bounds.x.to < roundBlock.position.x ||
-      this.bounds.y.from > roundBlock.position.y ||
-      this.bounds.y.to < roundBlock.position.y
-    );
+    if (roundBlock.position.y <= 0) {
+      return false;
+    }
+
+    return this.matrix?.[roundBlock.position.x]?.[roundBlock.position.y] === undefined;
   }
 
   private nextTick(callback: Callback): void {
