@@ -5,7 +5,7 @@ import { Position } from '@/position';
 import { RotationAngle } from '@/types/rotation-angle.type';
 import { Matrix } from '@/support/matrix.support';
 
-type FigureConstructor<T> = new (position: Position, color: string, rotationAngle?: RotationAngle) => T;
+type FigureConstructor<T> = new (position: Position, color: string, rotationAngle: RotationAngle) => T;
 
 export abstract class Figure implements Movable {
   protected abstract initialMatrix(): boolean[][];
@@ -59,6 +59,6 @@ export abstract class Figure implements Movable {
   public round<T extends Figure>(): T {
     const Static = this.constructor as FigureConstructor<T>;
 
-    return new Static(this.position.round(), this.color);
+    return new Static(this.position.round(), this.color, this.rotationAngle);
   }
 }

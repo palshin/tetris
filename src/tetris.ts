@@ -62,6 +62,8 @@ export class Tetris {
         down: false,
         left: false,
         right: false,
+        rotateClockwise: false,
+        rotateCounterClockwise: false,
       },
     };
 
@@ -75,21 +77,27 @@ export class Tetris {
 
     document.addEventListener('keydown', (event: KeyboardEvent) => {
       switch (event.key) {
-        case 'ArrowLeft':
+        case 'a':
+        case 'A':
           this.state.pressedKeys.left = true;
           break;
-        case 'ArrowRight':
+        case 'd':
+        case 'D':
           this.state.pressedKeys.right = true;
           break;
-        case 'ArrowDown':
+        case 's':
+        case 'S':
           this.state.pressedKeys.down = true;
           break;
-        case 'ArrowUp':
+        case 'w':
+        case 'W':
           this.state.pressedKeys.up = true;
           break;
+        case 'e':
         case 'E':
           this.state.pressedKeys.rotateClockwise = true;
           break;
+        case 'q':
         case 'Q':
           this.state.pressedKeys.rotateCounterClockwise = true;
           break;
@@ -99,21 +107,27 @@ export class Tetris {
 
     document.addEventListener('keyup', (event: KeyboardEvent) => {
       switch (event.key) {
-        case 'ArrowLeft':
+        case 'a':
+        case 'A':
           this.state.pressedKeys.left = false;
           break;
-        case 'ArrowRight':
+        case 'd':
+        case 'D':
           this.state.pressedKeys.right = false;
           break;
-        case 'ArrowDown':
+        case 's':
+        case 'S':
           this.state.pressedKeys.down = false;
           break;
-        case 'ArrowUp':
+        case 'w':
+        case 'W':
           this.state.pressedKeys.up = false;
           break;
+        case 'e':
         case 'E':
           this.state.pressedKeys.rotateClockwise = false;
           break;
+        case 'q':
         case 'Q':
           this.state.pressedKeys.rotateCounterClockwise = false;
           break;
@@ -193,7 +207,27 @@ export class Tetris {
     if (!currentFigure) {
       return;
     }
+    if (this.state.pressedKeys.rotateClockwise && this.canRotate(currentFigure, true)) {
+      currentFigure = currentFigure.rotate(true);
+      this.state.pressedKeys.rotateClockwise = false;
+    }
+
+    if (this.state.pressedKeys.rotateCounterClockwise && this.canRotate(currentFigure, false)) {
+      currentFigure = currentFigure.rotate(false);
+      this.state.pressedKeys.rotateCounterClockwise = false;
+    }
+
     const steps = this.getSteps(timeDelta);
+
+    if (this.state.pressedKeys.left && this.canMove(currentFigure, 'left', Math.ceil(steps))) {
+      currentFigure = currentFigure.move('left', Math.ceil(steps));
+      this.state.pressedKeys.left = false;
+    }
+    if (this.state.pressedKeys.right && this.canMove(currentFigure, 'right', Math.ceil(steps))) {
+      currentFigure = currentFigure.move('right', Math.ceil(steps));
+      this.state.pressedKeys.right = false;
+    }
+
     const canMoveDown = this.canMove(currentFigure, 'down', steps);
     if (!canMoveDown) {
       this.nextTick(() => {
@@ -202,12 +236,6 @@ export class Tetris {
       });
     } else {
       currentFigure = currentFigure.move('down', steps);
-    }
-    if (this.state.pressedKeys.left && this.canMove(currentFigure, 'left', steps)) {
-      currentFigure = currentFigure.move('left', steps);
-    }
-    if (this.state.pressedKeys.right && this.canMove(currentFigure, 'right', steps)) {
-      currentFigure = currentFigure.move('right', steps);
     }
     this.state.figure.current = currentFigure;
   }
@@ -222,6 +250,16 @@ export class Tetris {
 
   private canMove(figure: Figure, direction: MoveDirection, steps: number): boolean {
     const nextFigure = figure.move(direction, steps);
+
+    return (
+      nextFigure.isValidPosition() &&
+      nextFigure.blocks.every((block) => !this.hasIntersectionWithFallenBlocks(block)) &&
+      nextFigure.blocks.every((block) => !this.goesOutOfBounds(block))
+    );
+  }
+
+  private canRotate(figure: Figure, clockwise: boolean): boolean {
+    const nextFigure = figure.rotate(clockwise);
 
     return (
       nextFigure.isValidPosition() &&
