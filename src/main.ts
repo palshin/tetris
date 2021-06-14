@@ -3,14 +3,12 @@ import { CanvasRenderer } from '@/renderers/canvas.renderer';
 import '@/styles/app.scss';
 import { Tetris } from '@/tetris';
 
-document.addEventListener('DOMContentLoaded', function () {
-  const canvas: HTMLCanvasElement = document.querySelector('#game')!;
-  canvas.width = 400;
-  canvas.height = 800;
-  const context = canvas.getContext('2d');
+document.addEventListener('DOMContentLoaded', () => {
+  const gameFieldCanvas: HTMLCanvasElement | null = document.querySelector('#gameField');
+  const gameFieldContext = gameFieldCanvas?.getContext('2d');
 
-  if (context) {
-    const canvasRenderer = new CanvasRenderer(context, { length: 400 });
+  if (gameFieldContext) {
+    const canvasRenderer = new CanvasRenderer(gameFieldContext, { fieldLength: 400, length: 650 });
     const keyboardController = new KeyboardInputController();
     const tetris = new Tetris(canvasRenderer, keyboardController);
     console.clear();

@@ -52,7 +52,7 @@ export class Tetris {
     this.state = {
       time: 0,
       score: 0,
-      baseSpeed: 1000,
+      level: 1,
       speed: 1000, // ms for 1 round step
       figure: {
         current: this.generateFigure(),
@@ -95,9 +95,13 @@ export class Tetris {
     this.main();
   }
 
+  private get baseSpeed(): number {
+    return this.state.level * 1000;
+  }
+
   private main(): void {
     const now = Date.now();
-    this.state.speed = this.state.pressedKeys.down ? this.state.baseSpeed * 10 : this.state.baseSpeed;
+    this.state.speed = this.state.pressedKeys.down ? this.baseSpeed * 10 : this.baseSpeed;
     this.evolute(now - this.state.time);
     this.draw();
     this.state.time = now;
@@ -108,16 +112,23 @@ export class Tetris {
     // очищаем всю область
     this.renderer.clear();
 
-    // рисуем сцену
-    this.renderer.drawStage();
+    // рисуем информационную панель
+    this.renderer.drawSidebar(this.state.score, this.state.level);
 
-    // отрисовываем пустые блоки
+    // отрисовываем игровое поле
     this.drawBlockMatrix();
+
+    // отрисовываем следующую фигуру
+    this.drawNextFigure();
 
     // отрисовываем падающую фигуру
     if (this.state.figure.current) {
       this.drawBlocks(this.state.figure.current.blocks);
     }
+  }
+
+  private drawNextFigure(): void {
+    this.renderer.drawNextBlocks(...this.state.figure.next.moveToBegin().blocks);
   }
 
   private evolute(timeDelta: number): void {
@@ -209,6 +220,8 @@ export class Tetris {
     const score = this.config.scoreMap?.[rows as 1 | 2 | 3 | 4] || 0;
 
     this.state.score += score;
+
+    this.state.level = Math.floor(this.state.score / 5000) + 1;
   }
 
   private canRotate(figure: Figure, clockwise: boolean): boolean {

@@ -61,4 +61,24 @@ export abstract class Figure implements Movable {
 
     return new Static(this.position.round(), this.color, this.rotationAngle);
   }
+
+  public moveToBegin<T extends Figure>(): T {
+    const Static = this.constructor as FigureConstructor<T>;
+
+    let figure = new Static(new Position(this.position.x, this.position.y), this.color, this.rotationAngle);
+
+    let minYPosition = Math.min(...figure.blocks.map((b) => b.position.y));
+    if (minYPosition < 0) {
+      figure = figure.move('down', Math.abs(minYPosition));
+      minYPosition = Math.min(...figure.blocks.map((b) => b.position.y))
+    }
+
+    let minXPosition = Math.min(...figure.blocks.map((b) => b.position.x));
+    if (minXPosition < 0) {
+      figure = figure.move('right', Math.abs(minXPosition));
+      minXPosition = Math.min(...figure.blocks.map((b) => b.position.x));
+    }
+
+    return figure.move('up', minYPosition).move('left', minXPosition);
+  }
 }
