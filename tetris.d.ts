@@ -1,0 +1,33 @@
+import { TetrisConfig } from '@/types/tetris-config.interface';
+import { InputObserver } from '@/types/input-observer.interface';
+import { CanDraw } from '@/types/can-draw.interface';
+export declare class Tetris {
+    private readonly renderer;
+    readonly inputObserver: InputObserver;
+    private readonly config;
+    private readonly state;
+    private readonly matrix;
+    private callbacks;
+    constructor(renderer: CanDraw, inputObserver: InputObserver, config?: Readonly<Partial<TetrisConfig>>);
+    private get startPosition();
+    start(): void;
+    private get baseSpeed();
+    private main;
+    private draw;
+    private drawNextFigure;
+    private evolute;
+    private getSteps;
+    private addFallenFigureToMatrix;
+    private canMove;
+    private removeFilledRows;
+    private addScore;
+    private canRotate;
+    private hasIntersectionWithFallenBlocks;
+    private goesOutOfBounds;
+    private nextTick;
+    private executeCallbacks;
+    private drawBlocks;
+    private drawBlockMatrix;
+    private generateFigure;
+    private isEmptyBlock;
+}
