@@ -6,18 +6,10 @@ import { CanvasRenderer } from '@/renderers/canvas.renderer';
 import { FigureFactory } from '@/figures/figure.factory';
 import { Position } from '@/position';
 import { MoveDirection } from '@/types/move-direction.type';
+import { InputObserver } from '@/types/input-observer.interface';
+import { ControlKey } from '@/types/control-key.type';
 
 type Callback = () => void;
-
-interface SideBound {
-  from: number;
-  to: number;
-}
-
-interface Bounds {
-  x: SideBound;
-  y: SideBound;
-}
 
 const DEFAULT_TETRIS_CONFIG: TetrisConfig = {
   blocksCount: 10,
@@ -50,7 +42,11 @@ export class Tetris {
    * @param renderer - renderer that delegate drawing operations
    * @param config - game initial config object
    */
-  constructor(private readonly renderer: CanvasRenderer, config: Readonly<Partial<TetrisConfig>> = {}) {
+  constructor(
+    private readonly renderer: CanvasRenderer,
+    readonly inputObserver: InputObserver,
+    config: Readonly<Partial<TetrisConfig>> = {},
+  ) {
     this.config = { ...DEFAULT_TETRIS_CONFIG, ...config };
 
     this.state = {
@@ -80,82 +76,17 @@ export class Tetris {
       }
     }
 
-    document.addEventListener('keydown', (event: KeyboardEvent) => {
-      switch (event.key) {
-        case 'a':
-        case 'A':
-          this.state.pressedKeys.left = true;
-          break;
-        case 'd':
-        case 'D':
-          this.state.pressedKeys.right = true;
-          break;
-        case 's':
-        case 'S':
-          this.state.pressedKeys.down = true;
-          break;
-        case 'w':
-        case 'W':
-          this.state.pressedKeys.up = true;
-          break;
-        case 'e':
-        case 'E':
-          this.state.pressedKeys.rotateClockwise = true;
-          break;
-        case 'q':
-        case 'Q':
-          this.state.pressedKeys.rotateCounterClockwise = true;
-          break;
-        default:
-      }
+    inputObserver.subscribe('keyUp', (key: ControlKey) => {
+      this.state.pressedKeys[key] = true;
     });
 
-    document.addEventListener('keyup', (event: KeyboardEvent) => {
-      switch (event.key) {
-        case 'a':
-        case 'A':
-          this.state.pressedKeys.left = false;
-          break;
-        case 'd':
-        case 'D':
-          this.state.pressedKeys.right = false;
-          break;
-        case 's':
-        case 'S':
-          this.state.pressedKeys.down = false;
-          break;
-        case 'w':
-        case 'W':
-          this.state.pressedKeys.up = false;
-          break;
-        case 'e':
-        case 'E':
-          this.state.pressedKeys.rotateClockwise = false;
-          break;
-        case 'q':
-        case 'Q':
-          this.state.pressedKeys.rotateCounterClockwise = false;
-          break;
-        default:
-      }
+    inputObserver.subscribe('keyDown', (key: ControlKey) => {
+      this.state.pressedKeys[key] = false;
     });
   }
 
   private get startPosition(): Position {
     return new Position(Math.floor(this.config.blocksCount / 2), -2);
-  }
-
-  private get bounds(): Bounds {
-    return {
-      x: {
-        from: 0,
-        to: this.config.blocksCount - 1,
-      },
-      y: {
-        from: -4,
-        to: this.config.blocksCount * 2 - 1,
-      },
-    };
   }
 
   public start(): void {

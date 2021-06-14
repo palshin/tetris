@@ -1,3 +1,4 @@
+import { KeyboardInputController } from '@/input-controllers/keyboard.input-controller';
 import { CanvasRenderer } from '@/renderers/canvas.renderer';
 import '@/styles/app.scss';
 import { Tetris } from '@/tetris';
@@ -10,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (context) {
     const canvasRenderer = new CanvasRenderer(context, { length: 400 });
-    const tetris = new Tetris(canvasRenderer);
+    const keyboardController = new KeyboardInputController();
+    const tetris = new Tetris(canvasRenderer, keyboardController);
     console.clear();
     tetris.start();
   }

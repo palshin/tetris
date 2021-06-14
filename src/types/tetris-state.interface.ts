@@ -1,5 +1,5 @@
 import { Figure } from '@/figure';
-import { MoveDirection } from '@/types/move-direction.type';
+import { ControlKey } from '@/types/control-key.type';
 
 export interface TetrisState {
   time: number;
@@ -7,7 +7,7 @@ export interface TetrisState {
   baseSpeed: number;
   speed: number;
   pressedKeys: {
-    [k in MoveDirection | 'rotateClockwise' | 'rotateCounterClockwise']: boolean;
+    [k in ControlKey]: boolean;
   };
   figure: {
     current: Figure;
