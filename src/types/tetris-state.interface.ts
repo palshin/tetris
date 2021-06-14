@@ -10,7 +10,7 @@ export interface TetrisState {
     [k in MoveDirection | 'rotateClockwise' | 'rotateCounterClockwise']: boolean;
   };
   figure: {
-    current: Figure | null;
-    next: Figure | null;
+    current: Figure;
+    next: Figure;
   };
 }

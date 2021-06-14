@@ -53,8 +53,8 @@ export class Tetris {
       baseSpeed: 1000,
       speed: 1000, // ms for 1 round step
       figure: {
-        current: this.generateFigure(this.startPosition),
-        next: this.generateFigure(this.startPosition),
+        current: this.generateFigure(),
+        next: this.generateFigure(),
       },
       pressedKeys: {
         up: false,
@@ -167,21 +167,6 @@ export class Tetris {
     requestAnimationFrame(this.main.bind(this));
   }
 
-  private evolute(timeDelta: number): void {
-    // перед началом каждого цилка выполняем колбеки
-    this.executeCallbacks();
-
-    if (this.state.figure.current) {
-      // высчитываем позицию для падающей фигуры
-      this.evoluteCurrentFigure(timeDelta);
-    } else {
-      this.nextTick(() => {
-        this.state.figure.current = this.state.figure.next;
-        this.state.figure.next = this.generateFigure(this.startPosition);
-      });
-    }
-  }
-
   private draw(): void {
     // очищаем всю область
     this.renderer.clear();
@@ -198,7 +183,8 @@ export class Tetris {
     }
   }
 
-  private evoluteCurrentFigure(timeDelta: number): void {
+  private evolute(timeDelta: number): void {
+    this.executeCallbacks();
     let currentFigure = this.state.figure.current;
     if (!currentFigure) {
       return;
@@ -228,7 +214,8 @@ export class Tetris {
     if (!canMoveDown) {
       this.nextTick(() => {
         this.addFallenFigureToMatrix(currentFigure!);
-        this.state.figure.current = this.generateFigure(this.startPosition);
+        this.state.figure.current = this.state.figure.next;
+        this.state.figure.next = this.generateFigure();
       });
     } else {
       currentFigure = currentFigure.move('down', steps);
@@ -268,10 +255,9 @@ export class Tetris {
 
   private hasIntersectionWithFallenBlocks(block: Block): boolean {
     const roundBlock = block.round();
-    const matrixBlockColor =
-      this.matrix?.[roundBlock.position.x]?.[roundBlock.position.y]?.color ?? this.config.backgroundColor;
+    const matrixBlock = this.matrix?.[roundBlock.position.x]?.[roundBlock.position.y];
 
-    return matrixBlockColor !== this.config.backgroundColor;
+    return matrixBlock ? !this.isEmptyBlock(matrixBlock) : false;
   }
 
   private goesOutOfBounds(block: Block): boolean {
@@ -301,7 +287,11 @@ export class Tetris {
     this.matrix.forEach((blocks) => this.drawBlocks(blocks));
   }
 
-  private readonly generateFigure = (position: Position): Figure => {
-    return FigureFactory.makeRandom(position);
-  };
+  private generateFigure(): Figure {
+    return FigureFactory.makeRandom(this.startPosition);
+  }
+
+  private isEmptyBlock(block: Block): boolean {
+    return block.color === this.config.backgroundColor;
+  }
 }
