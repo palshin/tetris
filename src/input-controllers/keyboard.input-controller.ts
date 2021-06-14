@@ -10,10 +10,10 @@ export interface KeyboardInputControllerConfig {
 
 const DEFAULT_KEYBOARD_INPUT_CONTROLLER_CONFIG: KeyboardInputControllerConfig = {
   keysMap: {
-    left: ['a', 'A'],
-    right: ['d', 'D'],
-    down: ['s', 'S'],
     up: ['w', 'W'],
+    left: ['a', 'A'],
+    down: ['s', 'S'],
+    right: ['d', 'D'],
     rotateClockwise: ['e', 'E'],
     rotateCounterClockwise: ['q', 'Q'],
   },
@@ -46,6 +46,9 @@ export class KeyboardInputController implements InputObserver {
   private makeKeyEventListener(eventType: InputEventType) {
     return (event: KeyboardEvent) => {
       const callbacks = this.getCallbacks(eventType);
+      if (callbacks.length === 0) {
+        return;
+      }
       const eventKey = event.key;
       TypedObject.keys(this.config.keysMap).forEach((key: ControlKey) => {
         if (this.config.keysMap[key].includes(eventKey)) {

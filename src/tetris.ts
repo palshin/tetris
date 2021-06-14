@@ -76,11 +76,11 @@ export class Tetris {
       }
     }
 
-    inputObserver.subscribe('keyUp', (key: ControlKey) => {
+    inputObserver.subscribe('keyDown', (key: ControlKey) => {
       this.state.pressedKeys[key] = true;
     });
 
-    inputObserver.subscribe('keyDown', (key: ControlKey) => {
+    inputObserver.subscribe('keyUp', (key: ControlKey) => {
       this.state.pressedKeys[key] = false;
     });
   }
