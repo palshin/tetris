@@ -1,6 +1,7 @@
 import { Block } from '@/block';
 import { Position } from '@/position';
 import { Color } from '@/support/color.support';
+import { CanDraw } from '@/types/can-draw.interface';
 
 interface RendererConfig {
   blocksCount: number;
@@ -25,7 +26,7 @@ const DEFAULT_RENDERER_CONFIG: RendererConfig = {
 
 const DEFAULT_TRANSLATE_POSITION_OPTIONS: TranslatePositionOptions = { marginLeft: 0, marginTop: 0 };
 
-export class CanvasRenderer {
+export class CanvasRenderer implements CanDraw {
   private blockLength: number;
 
   private blockBorderWidth: number;

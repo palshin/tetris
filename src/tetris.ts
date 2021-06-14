@@ -2,12 +2,12 @@ import { Block } from '@/block';
 import { Figure } from '@/figure';
 import { TetrisConfig } from '@/types/tetris-config.interface';
 import { TetrisState } from '@/types/tetris-state.interface';
-import { CanvasRenderer } from '@/renderers/canvas.renderer';
 import { FigureFactory } from '@/figures/figure.factory';
 import { Position } from '@/position';
 import { MoveDirection } from '@/types/move-direction.type';
 import { InputObserver } from '@/types/input-observer.interface';
 import { ControlKey } from '@/types/control-key.type';
+import { CanDraw } from '@/types/can-draw.interface';
 
 type Callback = () => void;
 
@@ -43,7 +43,7 @@ export class Tetris {
    * @param config - game initial config object
    */
   constructor(
-    private readonly renderer: CanvasRenderer,
+    private readonly renderer: CanDraw,
     readonly inputObserver: InputObserver,
     config: Readonly<Partial<TetrisConfig>> = {},
   ) {
@@ -122,9 +122,7 @@ export class Tetris {
     this.drawNextFigure();
 
     // отрисовываем падающую фигуру
-    if (this.state.figure.current) {
-      this.drawBlocks(this.state.figure.current.blocks);
-    }
+    this.drawBlocks(this.state.figure.current.blocks);
   }
 
   private drawNextFigure(): void {
