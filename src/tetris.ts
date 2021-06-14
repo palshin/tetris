@@ -23,6 +23,12 @@ const DEFAULT_TETRIS_CONFIG: TetrisConfig = {
   blocksCount: 10,
   backgroundColor: '#112233',
   borderColor: 'white',
+  scoreMap: {
+    1: 100,
+    2: 300,
+    3: 700,
+    4: 1500,
+  },
 };
 
 /**
@@ -231,6 +237,7 @@ export class Tetris {
     figure.round().blocks.forEach((block) => {
       this.matrix[block.position.x][block.position.y] = block;
     });
+    this.removeFilledRows();
   }
 
   private canMove(figure: Figure, direction: MoveDirection, steps: number): boolean {
@@ -241,6 +248,36 @@ export class Tetris {
       nextFigure.blocks.every((block) => !this.hasIntersectionWithFallenBlocks(block)) &&
       nextFigure.blocks.every((block) => !this.goesOutOfBounds(block))
     );
+  }
+
+  private removeFilledRows(): void {
+    let removedRows = 0;
+    for (let y = this.matrix[0].length - 1; y >= 0; y -= 1) {
+      const isFilled = this.matrix.every((column) => !this.isEmptyBlock(column[y]));
+      if (isFilled) {
+        removedRows += 1;
+        this.matrix.forEach((column) => column.splice(y, 1));
+        this.matrix.forEach((column, x) => {
+          const block = new Block(new Position(x, 0), this.config.backgroundColor);
+          column.unshift(block);
+        });
+        y += 1;
+      }
+    }
+    if (removedRows !== 0) {
+      for (let x = 0; x < this.matrix.length; x += 1) {
+        for (let y = 0; y < this.matrix[x].length; y += 1) {
+          this.matrix[x][y] = new Block(new Position(x, y), this.matrix[x][y].color);
+        }
+      }
+      this.addScore(removedRows);
+    }
+  }
+
+  private addScore(rows: number): void {
+    const score = this.config.scoreMap?.[rows as 1 | 2 | 3 | 4] || 0;
+
+    this.state.score += score;
   }
 
   private canRotate(figure: Figure, clockwise: boolean): boolean {
